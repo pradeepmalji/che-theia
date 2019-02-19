@@ -15,7 +15,7 @@ import { injectable } from 'inversify';
 import { SS_CRT_PATH } from './che-https';
 
 import axios from 'axios';
-import { TelemetryClient, Event } from '@dfatwork-pkgs/workspace-telemetry-client';
+import { TelemetryClient, Event, EventProperties, IRequestError } from '@dfatwork-pkgs/workspace-telemetry-client';
 
 const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is not set';
 
@@ -204,19 +204,21 @@ export class CheApiServiceImpl implements CheApiService {
         }
     }
 
+    // tslint:disable-next-line: no-any
     async submitTelemetryEvent(id: string, properties: any, ip: string, agent: string, resolution: string): Promise<void> {
         try {
+            const props: EventProperties = {};
             const event: Event = {
                 id: id,
                 ip: ip,
                 userId: 'aUserId',
                 ownerId: 'anOwnerId',
                 agent: agent,
-                properties: []
+                properties: [props]
             };
-            this.telemetryClient.event(event).then(function(response: any) {
-                console.log("Event sent to telemetry endpoint: ", response.config.url);
-            }).catch(function(error: any) {
+            this.telemetryClient.event(event).then(function () {
+                console.log('Event sent to the telemetry endpoint');
+            }).catch(function (error: IRequestError) {
                 console.log(error);
             });
 

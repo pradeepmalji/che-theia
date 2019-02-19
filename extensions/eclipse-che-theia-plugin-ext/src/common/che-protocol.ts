@@ -76,6 +76,7 @@ export interface CheTelemetry {
 }
 
 export interface CheTelemetryMain {
+    // tslint:disable-next-line: no-any
     $event(id: string, properties: any): Promise<any>;
 }
 
@@ -440,6 +441,7 @@ export interface CheApiService {
     getSshKey(service: string, name: string): Promise<cheApi.ssh.SshPair>;
     deleteSshKey(service: string, name: string): Promise<void>;
     getAllSshKey(service: string): Promise<cheApi.ssh.SshPair[]>;
+    // tslint:disable-next-line: no-any
     submitTelemetryEvent(id: string, properties: any, ip: string, agent: string, resolution: string): Promise<void>;
 }
 
