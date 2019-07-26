@@ -23,7 +23,7 @@ const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is no
 export class CheApiServiceImpl implements CheApiService {
 
     private workspaceRestAPI: IRemoteAPI | undefined;
-    private telemetryClient: TelemetryClient = new TelemetryClient(undefined, 'https://localhost:4567');
+    private telemetryClient: TelemetryClient = new TelemetryClient(undefined, 'http://localhost:4567');
 
     async getCurrentWorkspaceId(): Promise<string> {
         return this.getWorkspaceIdFromEnv();

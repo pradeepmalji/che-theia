@@ -1,2 +1,2 @@
-# Telemetry Plug-in
-This plug-in submits telemetry events to a telemetry backend if any
+# telemetry-plugin
+telemetry-plugin Plugin example for Theia.

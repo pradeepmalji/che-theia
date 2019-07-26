@@ -13,7 +13,7 @@ extensions:
   folders:
     - che-theia-activity-tracker
   checkoutTo: master
-- source: https://github.com/eclipse/che-theia
+- source: file:///projects/che-theia
   folders:
     - extensions/eclipse-che-theia-plugin
     - extensions/eclipse-che-theia-plugin-ext

@@ -1,36 +1,41 @@
 {
-  "name": "@eclipse-che/telemetry-plugin",
-  "version": "0.0.1",
-  "publisher": "Eclipse Che",
-  "keywords": [
-    "theia-plugin"
-  ],
-  "description": "Telemetry Plugin",
-  "license": "EPL-2.0",
-  "files": [
-    "src"
-  ],
-  "dependencies": {
-  },
-  "devDependencies": {
-    "@theia/plugin": "0.3.19",
-    "@theia/plugin-packager": "latest",
-    "@eclipse-che/plugin": "0.0.1"
-  },
-  "scripts": {
-    "prepare": "yarn run clean && yarn run build",
-    "clean": "rimraf lib",
-    "format": "tsfmt -r --useTsfmt ../../configs/tsfmt.json",
-    "lint": "tslint -c ../../configs/tslint.json --project tsconfig.json",
-    "lint:fix": "tslint -c ../../configs/tslint.json --fix --project .",
-    "compile": "tsc",
-    "build": "yarn lint:fix && concurrently -n \"format,lint,compile\" -c \"red,green,blue\" \"yarn format\" \"yarn lint\" \"yarn compile\" && theia:plugin pack",
-    "watch": "tsc -w"
-  },
-  "engines": {
-    "theiaPlugin": "next"
-  },
-  "theiaPlugin": {
-    "frontend": "lib/telemetry-plugin.js"
-  }
+      "name": "telemetry-plugin",
+      "publisher": "theia",
+      "keywords": [
+        "theia-plugin"
+      ],
+      "description": "Manage Eclipse Che Telemetry Plugin",
+      "version": "0.0.1",
+      "license": "EPL-2.0",
+
+      "files": [
+        "src"
+      ],
+      "devDependencies": {
+        "@theia/plugin": "0.3.19",
+        "@theia/plugin-packager": "latest",
+        "@eclipse-che/plugin": "0.0.1",
+        "rimraf": "2.6.2",
+        "typescript-formatter": "7.2.2",
+        "typescript": "2.9.2",
+        "ts-loader": "^4.1.0",
+        "clean-webpack-plugin": "^0.1.19",
+        "webpack": "^4.1.1",
+        "webpack-cli": "^3.1.1"
+      },
+      "scripts": {
+        "prepare": "yarn run clean && yarn run build",
+        "clean": "rimraf lib",
+        "format-code": "tsfmt -r",
+        "watch": "webpack-cli -w --config webpack.config.js",
+        "compile": "webpack-cli --config webpack.config.js",
+
+        "build": "yarn run format-code && yarn run compile && theia:plugin pack"
+      },
+      "engines": {
+        "theiaPlugin": "0.0.1"
+      },
+      "theiaPlugin": {
+          "frontend": "dist/telemetry-plugin-frontend.js"
+      }
 }
