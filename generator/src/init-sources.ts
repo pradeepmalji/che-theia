@@ -83,6 +83,7 @@ export class InitSources {
         const extensionsYamlContent = await fs.readFile(extensionsPath);
         const extensionsYaml = jsYaml.load(extensionsYamlContent.toString());
         await this.initGlobalDependencies();
+        await this.addPluginsToYarnWorkspace();
         await fs.ensureDir(this.cheTheiaFolder);
 
         await Promise.all(extensionsYaml.sources.map(async (extension: ISource) => {
@@ -92,6 +93,19 @@ export class InitSources {
             await this.addExtension(extension);
         }));
 
+    }
+
+    /**
+     * Add 'plugins' folder to Theia yarn workspace
+     */
+    async addPluginsToYarnWorkspace() {
+        const rootPackagePath = path.join(this.rootFolder, 'package.json');
+        const rootPackage = require(rootPackagePath);
+        const workspaces: string[] = rootPackage['workspaces'];
+        workspaces.push('plugins/*');
+        rootPackage['workspaces'] = workspaces;
+        const json = JSON.stringify(rootPackage, undefined, 2);
+        await fs.writeFile(rootPackagePath, json);
     }
 
     /**
@@ -124,13 +138,13 @@ export class InitSources {
         // perform symlink
         await this.symlink(extension);
 
+        // perform plugins
+        await this.pluginsSymlink(extension);
+
         await this.updateDependencies(extension);
 
         // insert extensions
         await this.insertExtensionIntoAssembly(extension);
-
-        // perform plugins
-        await this.pluginsSymlink(extension);
 
     }
 
@@ -139,7 +153,7 @@ export class InitSources {
      */
     async updateDependencies(extension: ISource, rewrite: boolean = true): Promise<void> {
 
-        await Promise.all(extension.extSymbolicLinks.map(async symbolicLink => {
+        await Promise.all(extension.extSymbolicLinks.concat(extension.pluginSymbolicLinks ? extension.pluginSymbolicLinks : []).map(async symbolicLink => {
             // grab package.json
             const extensionJsonPath = path.join(symbolicLink, 'package.json');
             const extensionPackage = await readPkg(extensionJsonPath, { normalize: false });
@@ -186,7 +200,7 @@ export class InitSources {
         }
 
         // is it a theia dependency
-        if (dependencyKey.startsWith('@theia/')) {
+        if (dependencyKey.startsWith('@theia/') && dependencyKey !== '@theia/plugin-packager') {
             // add carret and the current version
             return `^${this.theiaVersion}`;
         }

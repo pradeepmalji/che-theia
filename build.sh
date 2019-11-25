@@ -13,7 +13,6 @@ set -e
 set -o pipefail
 
 parse "$@"
-yarn
 
 buildImages
 
