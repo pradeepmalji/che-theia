@@ -1,0 +1,12 @@
+{
+   "folders": [
+      {
+         "path": "file:///projects"
+      }
+   ],
+   "settings": {
+      "git.scanRepositories": [
+         "/projects"
+      ]
+   }
+}
