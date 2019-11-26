@@ -440,6 +440,7 @@ export interface CheApiService {
     getSshKey(service: string, name: string): Promise<cheApi.ssh.SshPair>;
     deleteSshKey(service: string, name: string): Promise<void>;
     getAllSshKey(service: string): Promise<cheApi.ssh.SshPair[]>;
+    submitTelemetryEvent(id: string, properties: any, ip: string, agent: string, resolution: string): Promise<void>;
 }
 
 export const CHE_TASK_SERVICE_PATH = '/che-task-service';
