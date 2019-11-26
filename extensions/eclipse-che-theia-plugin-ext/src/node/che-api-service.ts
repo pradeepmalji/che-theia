@@ -15,6 +15,7 @@ import { injectable } from 'inversify';
 import { SS_CRT_PATH } from './che-https';
 
 import axios from 'axios';
+import { TelemetryClient, Event } from '@dfatwork-pkgs/workspace-telemetry-client';
 
 const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is not set';
 
@@ -22,6 +23,7 @@ const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is no
 export class CheApiServiceImpl implements CheApiService {
 
     private workspaceRestAPI: IRemoteAPI | undefined;
+    private telemetryClient: TelemetryClient = new TelemetryClient(undefined, 'https://localhost:4567');
 
     async getCurrentWorkspaceId(): Promise<string> {
         return this.getWorkspaceIdFromEnv();
@@ -204,15 +206,21 @@ export class CheApiServiceImpl implements CheApiService {
 
     async submitTelemetryEvent(id: string, properties: any, ip: string, agent: string, resolution: string): Promise<void> {
         try {
-            axios.get('http://localhost:4567/telemetry/event/WORKSPACE_STARTED')
-                .then(function(response: any) {
-                    console.log("Event sent to telemetry endpoint: ", response.config.url);
-                })
-                .catch(function(error: any) {
-                    console.log(error);
-                });
+            const event: Event = {
+                id: id,
+                ip: ip,
+                userId: 'aUserId',
+                ownerId: 'anOwnerId',
+                agent: agent,
+                properties: []
+            };
+            this.telemetryClient.event(event).then(function(response: any) {
+                console.log("Event sent to telemetry endpoint: ", response.config.url);
+            }).catch(function(error: any) {
+                console.log(error);
+            });
 
-            return Promise.reject(`Unable to get factory with ID ${factoryId}`);
+            return Promise.reject(`Unable to get factory with ID ${id}`);
         } catch (e) {
             return Promise.reject('Unable to create Che API REST Client');
         }
