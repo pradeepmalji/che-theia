@@ -14,7 +14,6 @@ import { injectable } from 'inversify';
 
 import { SS_CRT_PATH } from './che-https';
 
-import axios from 'axios';
 import { TelemetryClient, Event, EventProperties, IRequestError } from '@dfatwork-pkgs/workspace-telemetry-client';
 
 const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is not set';

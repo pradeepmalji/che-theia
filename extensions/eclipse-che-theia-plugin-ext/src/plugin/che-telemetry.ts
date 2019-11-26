@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
 
-import { RPCProtocol } from '@theia/plugin-ext/lib/api/rpc-protocol';
+import { RPCProtocol } from '@theia/plugin-ext/lib/common/rpc-protocol';
 import { PLUGIN_RPC_CONTEXT, CheTelemetry, CheTelemetryMain } from '../common/che-protocol';
 
 export class CheTelemetryImpl implements CheTelemetry {
