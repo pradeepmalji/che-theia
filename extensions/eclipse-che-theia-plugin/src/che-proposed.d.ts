@@ -59,6 +59,10 @@ declare module '@eclipse-che/plugin' {
         export function deleteKey(service: string, name: string): Promise<void>;
     }
 
+    export namespace telemetry {
+        export function event(id: string, properties: any): PromiseLike<void>;
+    }
+
     /**
      * Namespace for variables substitution functionality.
      */
