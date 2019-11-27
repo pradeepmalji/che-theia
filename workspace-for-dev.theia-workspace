@@ -5,8 +5,14 @@
       }
    ],
    "settings": {
-      "git.scanRepositories": [
-         "/projects"
-      ]
+    "git.scanRepositories": [
+        "/projects/theia/che-theia"
+    ],
+    "launch": {},
+    "workspace.supportMultiRootWorkspace": false,
+    "git.alwaysSignOff": true,
+    "git.ignoredRepositories": [
+      "/projects/theia"
+    ]
    }
 }
