@@ -21,7 +21,6 @@ import { MessageService } from '@theia/core/lib/common';
 import { OutputChannelManager, OutputChannel } from '@theia/output/lib/common/output-channel';
 import URI from '@theia/core/lib/common/uri';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { Message } from '@phosphor/messaging';
 export const REMOTE_TERMINAL_TARGET_SCOPE = 'remote-terminal';
 export const REMOTE_TERMINAL_WIDGET_FACTORY_ID = 'remote-terminal';
 export const RemoteTerminalWidgetOptions = Symbol('RemoteTerminalWidgetOptions');
