@@ -67,6 +67,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
     @postConstruct()
     protected init(): void {
         super.init();
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts init() start');
         this.channel = this.outputChannelManager.getChannel(RemoteTerminalWidget.OUTPUT_CHANNEL_NAME);
 
         this.toDispose.push(this.remoteTerminalWatcher.onTerminalExecExit(exitEvent => {
@@ -102,9 +103,11 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
                 this.messageService.error(`Terminal failed to connect. ${reason}`);
             }
         }));
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts init() end');
     }
 
     async start(id?: number): Promise<number> {
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() start');
         try {
             if (!this.termServer) {
                 const termProxyCreator = <TerminalProxyCreator>await this.termProxyCreatorProvider();
@@ -122,7 +125,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
         } catch (err) {
             throw new Error('Failed to create terminal server proxy. Cause: ' + err);
         }
-
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() before createTerminal()');
         try {
             this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id);
         } catch (error) {
@@ -133,10 +136,13 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
             }
             throw new Error('Failed to start terminal. Cause: ' + error);
         }
-
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() after createTerminal()');
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() before connectTerminalProcess');
         this.connectTerminalProcess();
-
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() after connectTerminalProcess');
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() before waitForRemoteConnection');
         await this.waitForRemoteConnection;
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() after waitForRemoteConnection');
         // Some delay need to attach exec. If we send resize earlier this size will be skipped.
         setTimeout(async () => {
             await this.resizeTerminalProcess();
@@ -146,6 +152,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
             this.onDidOpenEmitter.fire(undefined);
             return this.terminalId;
         }
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts start() end');
         throw new Error('Failed to start terminal' + (id ? ` for id: ${id}.` : '.'));
     }
 
@@ -176,6 +183,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
     }
 
     protected async connectSocket(id: number): Promise<void> {
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts connectSocket() start');
         if (this.isOpen) {
             return Promise.resolve();
         }
@@ -184,6 +192,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
         const sendListener = (data: string) => socket.send(data);
 
         socket.onopen = () => {
+            console.log('### ' + Date.now() + ' - remote-terminal-widget.ts connectSocket() spcket opened');
             this.term.reset();
             if (this.waitForRemoteConnection) {
                 this.waitForRemoteConnection.resolve(socket);
@@ -210,6 +219,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
             this.term.off('data', sendListener);
             return Promise.resolve();
         };
+        console.log('### ' + Date.now() + ' - remote-terminal-widget.ts connectSocket() end');
     }
 
     protected createWebSocket(pid: string): ReconnectingWebSocket {
