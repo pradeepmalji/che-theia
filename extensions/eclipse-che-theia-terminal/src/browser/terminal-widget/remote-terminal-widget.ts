@@ -69,9 +69,10 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
     @postConstruct()
     protected init(): void {
         super.init();
-        this.connectingMessage = document.createElement('div');
-        this.connectingMessage.textContent = 'Connecting...';
-        this.node.appendChild(this.connectingMessage);
+        // this.connectingMessage = document.createElement('div');
+        // this.connectingMessage.textContent = 'Connecting...';
+        // this.node.appendChild(this.connectingMessage);
+        this.title.iconClass = 'fa fa-hourglass-half';
         console.log('### ' + Date.now() + ' - remote-terminal-widget.ts init() start');
         this.channel = this.outputChannelManager.getChannel(RemoteTerminalWidget.OUTPUT_CHANNEL_NAME);
 
@@ -198,6 +199,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
 
         socket.onopen = () => {
             console.log('### ' + Date.now() + ' - remote-terminal-widget.ts connectSocket() spcket opened');
+            this.title.iconClass = 'fa fa-terminal';
             this.term.reset();
             if (this.waitForRemoteConnection) {
                 this.waitForRemoteConnection.resolve(socket);
