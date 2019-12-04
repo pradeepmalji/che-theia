@@ -8,6 +8,7 @@
     "src"
   ],
   "dependencies": {
+    "@theia/plugin": "next",
     "@theia/plugin-ext": "next",
     "@theia/plugin-ext-vscode": "next",
     "@theia/core": "next"
