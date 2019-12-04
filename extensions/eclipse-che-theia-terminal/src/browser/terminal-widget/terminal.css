@@ -12,3 +12,8 @@
     height:100%;
     padding: var(--theia-code-padding);
 }
+
+.terminal-tab-icon {
+    padding-right: 0 !important;
+    margin-right: 2px;
+}
