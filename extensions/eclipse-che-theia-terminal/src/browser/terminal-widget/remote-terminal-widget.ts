@@ -72,7 +72,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
         // this.connectingMessage = document.createElement('div');
         // this.connectingMessage.textContent = 'Connecting...';
         // this.node.appendChild(this.connectingMessage);
-        this.title.iconClass = 'fa fa-hourglass-half';
+        this.title.iconClass = 'fas fa-spinner fa-pulse';
         console.log('### ' + Date.now() + ' - remote-terminal-widget.ts init() start');
         this.channel = this.outputChannelManager.getChannel(RemoteTerminalWidget.OUTPUT_CHANNEL_NAME);
 
