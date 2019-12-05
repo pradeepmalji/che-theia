@@ -305,7 +305,8 @@ export async function containersTreeTaskLauncherCommandHandler(source: string, l
             task.definition.target.containerName = containerName;
             
             const messageitem = theia.window.createStatusBarItem(theia.StatusBarAlignment.Right);
-            messageitem.text = 'Preparing task for execution';
+            messageitem.text = `$(fa-cogs) Preparing task '${label}' for execution`;
+            messageitem.text
             messageitem.show();
             await theia.tasks.executeTask(task);
             messageitem.hide();
