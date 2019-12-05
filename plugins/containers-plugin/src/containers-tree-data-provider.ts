@@ -303,8 +303,12 @@ export async function containersTreeTaskLauncherCommandHandler(source: string, l
                 task.definition.target = {};
             }
             task.definition.target.containerName = containerName;
-
-            theia.tasks.executeTask(task);
+            
+            const messageitem = theia.window.createStatusBarItem(theia.StatusBarAlignment.Right);
+            messageitem.text = 'Preparing task for execution';
+            messageitem.show();
+            await theia.tasks.executeTask(task);
+            messageitem.hide();
             return;
         }
     }
