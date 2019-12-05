@@ -37,7 +37,6 @@ import { DocumentContainerAware } from './document-container-aware';
 import { LanguagesContainerAware } from './languages-container-aware';
 import { PluginManagerExtImpl } from '@theia/plugin-ext/lib/plugin/plugin-manager';
 import { ExecuteCommandContainerAware } from './execute-command-container-aware';
-import { ExecuteTaskContainerAware } from './execute-task-container-aware';
 
 interface CheckAliveWS extends ws {
     alive: boolean;
@@ -218,8 +217,6 @@ to pick-up automatically a free port`));
         LanguagesContainerAware.makeLanguagesContainerAware((webSocketClient.rpc as any).locals.get(MAIN_RPC_CONTEXT.LANGUAGES_EXT.id));
         // tslint:disable-next-line:no-any
         ExecuteCommandContainerAware.makeExecuteCommandContainerAware((webSocketClient.rpc as any).locals.get(MAIN_RPC_CONTEXT.COMMAND_REGISTRY_EXT.id));
-        // tslint:disable-next-line:no-any
-        ExecuteTaskContainerAware.makeExecuteTaskContainerAware((webSocketClient.rpc as any).locals.get(MAIN_RPC_CONTEXT.TASKS_EXT.id));
 
         let channelName = '';
         if (process.env.CHE_MACHINE_NAME) {
