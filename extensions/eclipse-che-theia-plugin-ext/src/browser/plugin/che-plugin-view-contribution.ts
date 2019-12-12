@@ -16,10 +16,10 @@
 
 import { injectable } from 'inversify';
 import { AbstractViewContribution } from '@theia/core/lib/browser/shell/view-contribution';
-import { ChePluginWidget } from './che-plugin-widget';
+import { ChePluginView } from './che-plugin-view';
 
 @injectable()
-export class ChePluginViewContribution extends AbstractViewContribution<ChePluginWidget> {
+export class ChePluginViewContribution extends AbstractViewContribution<ChePluginView> {
 
     public static PLUGINS_WIDGET_ID = 'che-plugins';
 

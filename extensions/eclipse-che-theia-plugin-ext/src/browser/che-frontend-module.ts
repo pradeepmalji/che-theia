@@ -16,20 +16,24 @@ import { CheApiProvider } from './che-api-provider';
 import {
     CHE_API_SERVICE_PATH,
     CHE_TASK_SERVICE_PATH,
-    CHE_PLUGIN_SERVICE_PATH,
     CHE_PRODUCT_SERVICE_PATH,
     CheApiService,
     CheTaskClient,
     CheTaskService,
-    ChePluginService,
     CheProductService,
     CheSideCarContentReaderRegistry
 } from '../common/che-protocol';
+import {
+    CHE_PLUGIN_SERVICE_PATH,
+    ChePluginService,
+    ChePluginServiceClient
+} from '../common/che-plugin-protocol';
+import { ChePluginServiceClientImpl } from './plugin/che-plugin-service-client';
 import { WebSocketConnectionProvider, bindViewContribution, WidgetFactory } from '@theia/core/lib/browser';
 import { CommandContribution, ResourceResolver } from '@theia/core/lib/common';
 import { CheTaskClientImpl } from './che-task-client';
 import { ChePluginViewContribution } from './plugin/che-plugin-view-contribution';
-import { ChePluginWidget } from './plugin/che-plugin-widget';
+import { ChePluginView } from './plugin/che-plugin-view';
 import { ChePluginFrontentService } from './plugin/che-plugin-frontend-service';
 import { ChePluginManager } from './plugin/che-plugin-manager';
 import { ChePluginMenu } from './plugin/che-plugin-menu';
@@ -38,6 +42,8 @@ import { bindChePluginPreferences } from './plugin/che-plugin-preferences';
 import { CheSideCarContentReaderRegistryImpl, CheSideCarResourceResolver } from './che-sidecar-resource';
 import { CheMiniBrowserOpenHandler } from './che-mini-browser-open-handler';
 import { MiniBrowserOpenHandler } from '@theia/mini-browser/lib/browser/mini-browser-open-handler';
+import { WebviewEnvironment } from '@theia/plugin-ext/lib/main/browser/webview/webview-environment';
+import { CheWebviewEnvironment } from './che-webview-environment';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(CheApiProvider).toSelf().inSingletonScope();
@@ -57,10 +63,15 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
 
     bindChePluginPreferences(bind);
 
+    bind(ChePluginServiceClientImpl).toSelf().inSingletonScope();
+    bind(ChePluginServiceClient).toService(ChePluginServiceClientImpl);
     bind(ChePluginService).toDynamicValue(ctx => {
         const provider = ctx.container.get(WebSocketConnectionProvider);
-        return provider.createProxy<CheApiService>(CHE_PLUGIN_SERVICE_PATH);
+        const client: ChePluginServiceClient = ctx.container.get(ChePluginServiceClient);
+        return provider.createProxy<CheApiService>(CHE_PLUGIN_SERVICE_PATH, client);
     }).inSingletonScope();
+
+    rebind(WebviewEnvironment).to(CheWebviewEnvironment).inSingletonScope();
 
     bind(ChePluginFrontentService).toSelf().inSingletonScope();
     bind(ChePluginManager).toSelf().inSingletonScope();
@@ -69,10 +80,10 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
 
     bind(ChePluginMenu).toSelf().inSingletonScope();
 
-    bind(ChePluginWidget).toSelf();
+    bind(ChePluginView).toSelf();
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: ChePluginViewContribution.PLUGINS_WIDGET_ID,
-        createWidget: () => ctx.container.get(ChePluginWidget)
+        createWidget: () => ctx.container.get(ChePluginView)
     }));
 
     bind(ChePluginCommandContribution).toSelf().inSingletonScope();

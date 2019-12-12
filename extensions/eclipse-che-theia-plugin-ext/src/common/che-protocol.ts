@@ -94,6 +94,7 @@ export interface CheTaskMain {
     $registerTaskRunner(type: string): Promise<void>;
     $disposeTaskRunner(type: string): Promise<void>;
     $fireTaskExited(event: che.TaskExitedEvent): Promise<void>;
+    $addTaskSubschema(schema: che.TaskJSONSchema): Promise<void>;
 }
 
 export interface CheSideCarContentReader {
@@ -407,6 +408,8 @@ export interface CheApiService {
 
     currentWorkspace(): Promise<cheApi.workspace.Workspace>;
     getWorkspaceById(workspaceId: string): Promise<cheApi.workspace.Workspace>;
+    getCurrentWorkspacesContainers(): Promise<{ [key: string]: cheApi.workspace.Machine }>;
+    findUniqueServerByAttribute(attributeName: string, attributeValue: string): Promise<cheApi.workspace.Server>;
 
     updateWorkspace(workspaceId: string, workspace: cheApi.workspace.Workspace): Promise<cheApi.workspace.Workspace>;
     stop(): Promise<void>;
@@ -444,86 +447,6 @@ export interface CheTaskClient {
     killTask(taskInfo: che.TaskInfo): Promise<void>;
     addRunTaskHandler(func: (config: che.TaskConfiguration, ctx?: string) => Promise<che.TaskInfo>): void;
     onKillEvent: Event<che.TaskInfo>
-}
-
-export interface ChePluginRegistry {
-    name: string,
-    uri: string
-}
-
-export interface ChePlugin {
-    publisher: string;
-    name: string;
-    version: string;
-    installed: boolean;
-    versionList: {
-        [version: string]: ChePluginMetadata;
-    }
-}
-
-/**
- * Describes properties in plugin meta.yaml
- */
-export interface ChePluginMetadata {
-    publisher: string,
-    name: string,
-    version: string,
-    type: string,
-    displayName: string,
-    title: string,
-    description: string,
-    icon: string,
-    url: string,
-    repository: string,
-    firstPublicationDate: string,
-    category: string,
-    latestUpdateDate: string,
-
-    // Plugin KEY. Used to set in workpsace configuration
-    key: string,
-    builtIn: boolean
-}
-
-export const CHE_PLUGIN_SERVICE_PATH = '/che-plugin-service';
-
-export const ChePluginService = Symbol('ChePluginService');
-
-export interface ChePluginService {
-
-    /**
-     * Returns default plugin registry;
-     */
-    getDefaultRegistry(): Promise<ChePluginRegistry>;
-
-    /**
-     * Returns a list of available plugins on the plugin registry.
-     *
-     * @param registry ChePluginRegistry plugin registry
-     * @param filter filter
-     * @return list of available plugins
-     */
-    getPlugins(registry: ChePluginRegistry, filter: string): Promise<ChePluginMetadata[]>;
-
-    /**
-     * Returns list of plugins described in workspace configuration.
-     */
-    getWorkspacePlugins(): Promise<string[]>;
-
-    /**
-     * Adds a plugin to workspace configuration.
-     */
-    addPlugin(pluginKey: string): Promise<void>;
-
-    /**
-     * Removes a plugin from workspace configuration.
-     */
-    removePlugin(pluginKey: string): Promise<void>;
-
-    /**
-     * Changes the plugin version.
-     */
-    updatePlugin(oldPluginKey: string, newPluginKey: string): Promise<void>;
-
 }
 
 export interface CheUser { }
