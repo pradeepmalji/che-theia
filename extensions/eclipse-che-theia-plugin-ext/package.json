@@ -21,7 +21,7 @@
     "@theia/plugin-ext": "next",
     "axios": "0.19.0",
     "js-yaml": "3.13.1",
-    "@dfatwork-pkgs/workspace-telemetry-client": "^0.0.1-1574258186"
+    "@eclipse-che/workspace-telemetry-client": "^0.0.1-1576660284"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.19",
