@@ -99,9 +99,8 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
         };
 
         const telemetry: typeof che.telemetry = {
-            // tslint:disable-next-line: no-any
-            event(id: string, properties: any): Promise<void> {
-                return cheTelemetryImpl.event(id, properties);
+            event(id: string, ownerId: string, properties: [string, string][]): Promise<void> {
+                return cheTelemetryImpl.event(id, ownerId, properties);
             }
         };
 

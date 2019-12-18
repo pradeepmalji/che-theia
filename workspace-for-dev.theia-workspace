@@ -2,6 +2,9 @@
    "folders": [
       {
          "path": "file:///projects"
+      },
+      {
+         "path": "file:///projects/theia/che-theia"
       }
    ],
    "settings": {
@@ -13,6 +16,7 @@
     "git.alwaysSignOff": true,
     "git.ignoredRepositories": [
       "/projects/theia"
-    ]
+   ],
+   "java.configuration.updateBuildConfiguration": "automatic"
    }
 }

@@ -20,12 +20,25 @@ export class CheTelemetryMainImpl implements CheTelemetryMain {
         this.cheApiService = container.get(CheApiService);
     }
 
-    // tslint:disable-next-line: no-any
-    async $event(id: string, properties: any): Promise<void> {
+    async $event(id: string, ownerId: string, properties: [string, string][]): Promise<void> {
         // TODO : get the infos from the browser
         const ip = 'anIpExample';
-        const agent = 'anAgentExample';
-        const resolution = 'anResolutionExample';
-        return this.cheApiService.submitTelemetryEvent(id, properties, ip, agent, resolution);
+
+        let agent = '';
+        let resolution = '';
+        const navigator = window.navigator;
+        if (navigator) {
+            agent = navigator.userAgent;
+        }
+        const screen = window.screen;
+        if (screen) {
+            const width = screen.width;
+            const height = screen.height;
+            if (height && width) {
+                resolution = '' + width + 'x' + height;
+            }
+        }
+
+        return this.cheApiService.submitTelemetryEvent(id, ownerId, ip, agent, resolution, properties);
     }
 }

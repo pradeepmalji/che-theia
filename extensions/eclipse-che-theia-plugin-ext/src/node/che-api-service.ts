@@ -14,7 +14,7 @@ import { injectable } from 'inversify';
 
 import { SS_CRT_PATH } from './che-https';
 
-import { TelemetryClient, Event, EventProperties, IRequestError } from '@dfatwork-pkgs/workspace-telemetry-client';
+import { TelemetryClient, Event, EventProperty } from '@eclipse-che/workspace-telemetry-client';
 
 const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is not set';
 
@@ -22,7 +22,7 @@ const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is no
 export class CheApiServiceImpl implements CheApiService {
 
     private workspaceRestAPI: IRemoteAPI | undefined;
-    private telemetryClient: TelemetryClient = new TelemetryClient(undefined, 'http://localhost:4567');
+    private telemetryClient: TelemetryClient | undefined;
 
     async getCurrentWorkspaceId(): Promise<string> {
         return this.getWorkspaceIdFromEnv();
@@ -203,28 +203,55 @@ export class CheApiServiceImpl implements CheApiService {
         }
     }
 
-    // tslint:disable-next-line: no-any
-    async submitTelemetryEvent(id: string, properties: any, ip: string, agent: string, resolution: string): Promise<void> {
+    async submitTelemetryEvent(id: string, ownerId: string, ip: string, agent: string, resolution: string, properties: [string, string][]): Promise<void> {
         try {
-            const props: EventProperties = {};
             const event: Event = {
                 id: id,
                 ip: ip,
-                userId: 'aUserId',
-                ownerId: 'anOwnerId',
+                ownerId: ownerId,
                 agent: agent,
-                properties: [props]
+                resolution: resolution,
+                properties: properties.map((prop: [string, string]) => {
+                    const eventProp: EventProperty = {
+                        id: prop[0],
+                        value: prop[1]
+                    };
+                    return eventProp;
+                })
             };
-            this.telemetryClient.event(event).then(function () {
-                console.log('Event sent to the telemetry endpoint');
-            }).catch(function (error: IRequestError) {
-                console.log(error);
-            });
-
-            return Promise.reject(`Unable to get factory with ID ${id}`);
+            const client = await this.getWorkspaceTelemetryClient();
+            const result = await client.event(event);
+            console.log(result);
         } catch (e) {
-            return Promise.reject('Unable to create Che API REST Client');
+            console.error(e);
+            throw new Error(e);
         }
+    }
+
+    async submitTelemetryActivity(): Promise<void> {
+        try {
+            const client = await this.getWorkspaceTelemetryClient();
+            const result = await client.activity();
+            console.log(result);
+        } catch (e) {
+            console.error(e);
+            throw new Error(e);
+        }
+    }
+
+    private async getWorkspaceTelemetryClient(): Promise<TelemetryClient> {
+
+        const cheWorkspaceTelemetryBackendPortVar = process.env.CHE_WORKSPACE_TELEMETRY_BACKEND_PORT;
+
+        if (!cheWorkspaceTelemetryBackendPortVar) {
+            return Promise.reject('Unable to create Che Workspace Telemetry REST Client: "CHE_API_INTERNAL" is not set.');
+        }
+
+        if (!this.telemetryClient) {
+            this.telemetryClient = await new TelemetryClient(undefined, 'http://localhost:' + cheWorkspaceTelemetryBackendPortVar);
+        }
+
+        return this.telemetryClient;
     }
 
     private async getCheApiClient(): Promise<IRemoteAPI> {

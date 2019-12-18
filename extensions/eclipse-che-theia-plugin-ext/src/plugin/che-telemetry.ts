@@ -19,10 +19,9 @@ export class CheTelemetryImpl implements CheTelemetry {
         this.telemetryMain = rpc.getProxy(PLUGIN_RPC_CONTEXT.CHE_TELEMETRY_MAIN);
     }
 
-    // tslint:disable-next-line: no-any
-    async event(id: string, properties: any): Promise<void> {
+    async event(id: string, ownerId: string, properties: [string, string][]): Promise<void> {
         try {
-            return await this.telemetryMain.$event(id, properties);
+            return await this.telemetryMain.$event(id, ownerId, properties);
         } catch (e) {
             return Promise.reject(e);
         }

@@ -60,7 +60,7 @@ declare module '@eclipse-che/plugin' {
     }
 
     export namespace telemetry {
-        export function event(id: string, properties: any): Promise<void>;
+        export function event(id: string, ownerId: string, properties: [string, string][]): Promise<void>;
     }
 
     /**

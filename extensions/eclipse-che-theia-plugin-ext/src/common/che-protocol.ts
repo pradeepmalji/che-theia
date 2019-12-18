@@ -76,8 +76,7 @@ export interface CheTelemetry {
 }
 
 export interface CheTelemetryMain {
-    // tslint:disable-next-line: no-any
-    $event(id: string, properties: any): Promise<any>;
+    $event(id: string, ownerId: string, properties: [string, string][]): Promise<void>;
 }
 
 /**
@@ -441,8 +440,8 @@ export interface CheApiService {
     getSshKey(service: string, name: string): Promise<cheApi.ssh.SshPair>;
     deleteSshKey(service: string, name: string): Promise<void>;
     getAllSshKey(service: string): Promise<cheApi.ssh.SshPair[]>;
-    // tslint:disable-next-line: no-any
-    submitTelemetryEvent(id: string, properties: any, ip: string, agent: string, resolution: string): Promise<void>;
+    submitTelemetryEvent(id: string, ownerId: string, ip: string, agent: string, resolution: string, properties: [string, string][]): Promise<void>;
+    submitTelemetryActivity(): Promise<void>;
 }
 
 export const CHE_TASK_SERVICE_PATH = '/che-task-service';
