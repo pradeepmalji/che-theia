@@ -13,8 +13,6 @@ import * as che from '@eclipse-che/plugin';
 
 export function start(context: theia.PluginContext) {
     che.telemetry.event('WORKSPACE_OPENED', context.extensionPath, [
-        ['coucou-name', 'coucou-value'],
-        ['kiki-name', 'kiki-value']
     ]);
 
     theia.workspace.onDidChangeTextDocument((e: theia.TextDocumentChangeEvent) => {
