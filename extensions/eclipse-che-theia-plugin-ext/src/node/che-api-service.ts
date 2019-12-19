@@ -22,7 +22,7 @@ const ENV_WORKSPACE_ID_IS_NOT_SET = 'Environment variable CHE_WORKSPACE_ID is no
 export class CheApiServiceImpl implements CheApiService {
 
     private workspaceRestAPI: IRemoteAPI | undefined;
-    private telemetryClient: TelemetryClient | undefined;
+    private telemetryClient: TelemetryClient | undefined = this.getWorkspaceTelemetryClient();
 
     async getCurrentWorkspaceId(): Promise<string> {
         return this.getWorkspaceIdFromEnv();
@@ -219,9 +219,11 @@ export class CheApiServiceImpl implements CheApiService {
                     return eventProp;
                 })
             };
-            const client = await this.getWorkspaceTelemetryClient();
-            const result = await client.event(event);
-            console.log(result);
+            const client = this.getWorkspaceTelemetryClient();
+            if (client) {
+                const result = await client.event(event);
+                console.log(result);
+            }
         } catch (e) {
             console.error(e);
             throw new Error(e);
@@ -230,25 +232,28 @@ export class CheApiServiceImpl implements CheApiService {
 
     async submitTelemetryActivity(): Promise<void> {
         try {
-            const client = await this.getWorkspaceTelemetryClient();
-            const result = await client.activity();
-            console.log(result);
+            const client = this.getWorkspaceTelemetryClient();
+            if (client) {
+                const result = await client.activity();
+                console.log(result);
+            }
         } catch (e) {
             console.error(e);
             throw new Error(e);
         }
     }
 
-    private async getWorkspaceTelemetryClient(): Promise<TelemetryClient> {
-
-        const cheWorkspaceTelemetryBackendPortVar = process.env.CHE_WORKSPACE_TELEMETRY_BACKEND_PORT;
-
-        if (!cheWorkspaceTelemetryBackendPortVar) {
-            return Promise.reject('Unable to create Che Workspace Telemetry REST Client: "CHE_API_INTERNAL" is not set.');
-        }
+    private getWorkspaceTelemetryClient(): TelemetryClient | undefined {
 
         if (!this.telemetryClient) {
-            this.telemetryClient = await new TelemetryClient(undefined, 'http://localhost:' + cheWorkspaceTelemetryBackendPortVar);
+            const cheWorkspaceTelemetryBackendPortVar = process.env.CHE_WORKSPACE_TELEMETRY_BACKEND_PORT;
+
+            if (!cheWorkspaceTelemetryBackendPortVar) {
+                console.error('Unable to create Che API REST Client: "CHE_WORKSPACE_TELEMETRY_BACKEND_PORT" is not set.');
+                return undefined;
+            }
+
+            this.telemetryClient = new TelemetryClient(undefined, 'http://localhost:' + cheWorkspaceTelemetryBackendPortVar);
         }
 
         return this.telemetryClient;
