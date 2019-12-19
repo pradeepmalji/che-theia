@@ -22,7 +22,7 @@ export class CheTelemetryMainImpl implements CheTelemetryMain {
 
     async $event(id: string, ownerId: string, properties: [string, string][]): Promise<void> {
         // TODO : get the infos from the browser
-        const ip = 'anIpExample';
+        const ip = '';
 
         let agent = '';
         let resolution = '';
