@@ -12,28 +12,17 @@ import * as theia from '@theia/plugin';
 import * as che from '@eclipse-che/plugin';
 
 export function start(context: theia.PluginContext) {
-    che.telemetry.event('WORKSPACE_START', context.extensionPath, [
+    che.telemetry.event('WORKSPACE_OPENED', context.extensionPath, [
         ['coucou-name', 'coucou-value'],
         ['kiki-name', 'kiki-value']
     ]);
-    const SubmitEditTelemetryEventCommand = {
-        id: 'telemetry-plugin-file-edit-event',
-        label: 'Submit Edit File Telemetry Event'
-    };
 
-    // tslint:disable-next-line: no-any
-    context.subscriptions.push(theia.commands.registerCommand(SubmitEditTelemetryEventCommand, (...args: any[]) => {
-        theia.window.showInputBox({ prompt: 'Enter file type: ' }, undefined)
-            .then((t: string | undefined) => {
-                console.log('In the callback of InputBox with value: ', t);
-                if (t) {
-                    che.telemetry.event('EDITOR_USED', context.extensionPath,
-                        [
-                            ['programming language', t]
-                        ]);
-                }
-            });
-    }));
+    theia.workspace.onDidChangeTextDocument((e: theia.TextDocumentChangeEvent) => {
+        che.telemetry.event('EDITOR_USED', context.extensionPath,
+            [
+                ['programming language', e.document.languageId]
+            ]);
+    });
 }
 
 export function stop() {
