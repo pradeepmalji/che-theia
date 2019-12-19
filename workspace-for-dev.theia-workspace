@@ -2,14 +2,11 @@
    "folders": [
       {
          "path": "file:///projects"
-      },
-      {
-         "path": "file:///projects/theia/che-theia"
       }
    ],
    "settings": {
     "git.scanRepositories": [
-        "/projects/theia/che-theia"
+        "theia/che-theia"
     ],
     "launch": {},
     "workspace.supportMultiRootWorkspace": false,
