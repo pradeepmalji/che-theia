@@ -7,17 +7,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  **********************************************************************/
-import { CheTask, CheTaskMain, CheTaskService, CheTaskClient, PLUGIN_RPC_CONTEXT } from '../common/che-protocol';
+import { TaskExitedEvent, TaskInfo, TaskJSONSchema, TaskStatusOptions } from '@eclipse-che/plugin';
 import { RPCProtocol } from '@theia/plugin-ext/lib/common/rpc-protocol';
-import { interfaces, injectable } from 'inversify';
-import { TaskExitedEvent, TaskJSONSchema } from '@eclipse-che/plugin';
 import { TaskSchemaUpdater } from '@theia/task/lib/browser';
+import { TaskWatcher } from '@theia/task/lib/common';
+import { injectable, interfaces } from 'inversify';
+import { CheTask, CheTaskClient, CheTaskMain, CheTaskService, PLUGIN_RPC_CONTEXT } from '../common/che-protocol';
+import { TaskStatusHandler } from './task-status-handler';
 
 @injectable()
 export class CheTaskMainImpl implements CheTaskMain {
     private readonly delegate: CheTaskService;
     private readonly cheTaskClient: CheTaskClient;
     private readonly taskSchemaUpdater: TaskSchemaUpdater;
+    private readonly taskStatusHandler: TaskStatusHandler;
+
     constructor(container: interfaces.Container, rpc: RPCProtocol) {
         const proxy: CheTask = rpc.getProxy(PLUGIN_RPC_CONTEXT.CHE_TASK);
         this.delegate = container.get(CheTaskService);
@@ -25,6 +29,11 @@ export class CheTaskMainImpl implements CheTaskMain {
         this.cheTaskClient = container.get(CheTaskClient);
         this.cheTaskClient.onKillEvent(taskInfo => proxy.$killTask(taskInfo));
         this.cheTaskClient.addRunTaskHandler((config, ctx) => proxy.$runTask(config, ctx));
+        this.taskStatusHandler = container.get(TaskStatusHandler);
+
+        const taskWatcher = container.get(TaskWatcher);
+        taskWatcher.onTaskCreated((event: TaskInfo) => proxy.$onDidStartTask(event));
+        taskWatcher.onTaskExit((event: TaskExitedEvent) => proxy.$onDidEndTask(event));
     }
 
     $registerTaskRunner(type: string): Promise<void> {
@@ -41,5 +50,9 @@ export class CheTaskMainImpl implements CheTaskMain {
 
     async $addTaskSubschema(schema: TaskJSONSchema): Promise<void> {
         return this.taskSchemaUpdater.addSubschema(schema);
+    }
+
+    async $setTaskStatus(options: TaskStatusOptions) {
+        this.taskStatusHandler.setTaskStatus(options);
     }
 }
