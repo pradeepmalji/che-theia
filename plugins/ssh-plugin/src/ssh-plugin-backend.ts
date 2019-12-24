@@ -149,7 +149,8 @@ export async function start() {
     theia.commands.registerCommand(DELETE, () => {
         deleteKeyPair(sshKeyManager);
     });
-    theia.commands.registerCommand(VIEW, () => {
+    theia.commands.registerCommand(VIEW, async () => {
+        await che.github.uploadPublicSshKey('p-key');
         viewPublicKey(sshKeyManager);
     });
     theia.commands.registerCommand(UPLOAD, () => {

@@ -59,8 +59,14 @@ export class CheGithubMainImpl implements CheGithubMain {
     private authenticate(): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const redirectUrl = window.location.href;
+            // tslint:disable-next-line: no-any
+            const _window: any = window;
+            const keycloak = _window._keycloak;
+            const token = keycloak && keycloak.token && keycloak.token.length > 0 ? keycloak.token : undefined;
+            console.log('>>>>>>>>>>>>>>>>');
+            console.log(_window);
             const url = `${this.apiUrl}/oauth/authenticate?oauth_provider=github&userId=${await this.getUserId()}` +
-                `&scope=write:public_key&redirect_after_login=${redirectUrl}`;
+                `&scope=write:public_key&redirect_after_login=${redirectUrl}` + token ? `&token=${token}` : '';
             const popupWindow = window.open(url, 'popup');
             const popup_close_handler = async () => {
                 if (!popupWindow || popupWindow.closed) {
@@ -88,7 +94,12 @@ export class CheGithubMainImpl implements CheGithubMain {
 
     private async getToken(): Promise<string | undefined> {
         try {
-            const result = await this.axiosInstance.get<{ token: string }>(`${this.apiUrl}/oauth/token?oauth_provider=github`);
+            // tslint:disable-next-line: no-any
+            const _window: any = window;
+            const keycloak = _window._keycloak;
+            const token = keycloak && keycloak.token && keycloak.token.length > 0 ? keycloak.token : undefined;
+            console.log('>>>>>>>_2 ' + token);
+            const result = await this.axiosInstance.get<{ token: string }>(`${this.apiUrl}/oauth/token?oauth_provider=github` + token ? `&token=${token}` : '');
             return result.data.token;
         } catch (e) {
             return undefined;
