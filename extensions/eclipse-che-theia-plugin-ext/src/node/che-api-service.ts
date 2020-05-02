@@ -32,6 +32,12 @@ export class CheApiServiceImpl implements CheApiService {
         return process.env.CHE_API_INTERNAL;
     }
 
+    async getUserId(token?: string): Promise<string> {
+        const cheApiClient = await this.getCheApiClient();
+        const user = await cheApiClient.getCurrentUser(token);
+        return user.id;
+    }
+
     async getUserPreferences(filter?: string): Promise<Preferences> {
         const cheApiClient = await this.getCheApiClient();
         return cheApiClient.getUserPreferences(filter);
@@ -109,6 +115,16 @@ export class CheApiServiceImpl implements CheApiService {
         } catch (e) {
             console.log(e);
             return Promise.reject('Cannot create Che API REST Client');
+        }
+    }
+
+    async updateWorkspaceActivity(): Promise<void> {
+        try {
+            const cheApiClient = await this.getCheApiClient();
+            return cheApiClient.updateActivity(this.getWorkspaceIdFromEnv());
+        } catch (e) {
+            console.error(e);
+            throw new Error(e);
         }
     }
 
@@ -260,9 +276,8 @@ export class CheApiServiceImpl implements CheApiService {
                     return eventProp;
                 })
             };
-            const client = this.getWorkspaceTelemetryClient();
-            if (client) {
-                await client.event(event);
+            if (this.telemetryClient) {
+                await this.telemetryClient.event(event);
             }
         } catch (e) {
             console.error(e);
@@ -272,13 +287,26 @@ export class CheApiServiceImpl implements CheApiService {
 
     async submitTelemetryActivity(): Promise<void> {
         try {
-            const client = this.getWorkspaceTelemetryClient();
-            if (client) {
-                await client.activity();
+            if (this.telemetryClient) {
+                await this.telemetryClient.activity();
             }
         } catch (e) {
             console.error(e);
             throw new Error(e);
+        }
+    }
+
+    async getOAuthToken(oAuthProvider: string, token?: string): Promise<string | undefined> {
+        const cheApiClient = await this.getCheApiClient();
+        return cheApiClient.getOAuthToken(oAuthProvider, token);
+    }
+
+    async getOAuthProviders(token?: string): Promise<string[]> {
+        const cheApiClient = await this.getCheApiClient();
+        try {
+            return await cheApiClient.getOAuthProviders(token);
+        } catch (e) {
+            return [];
         }
     }
 
@@ -316,7 +344,7 @@ export class CheApiServiceImpl implements CheApiService {
             }
             restAPIConfig.ssCrtPath = SS_CRT_PATH;
 
-            this.workspaceRestAPI = await WorkspaceClient.getRestApi(restAPIConfig);
+            this.workspaceRestAPI = WorkspaceClient.getRestApi(restAPIConfig);
         }
 
         return this.workspaceRestAPI;

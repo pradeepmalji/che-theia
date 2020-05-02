@@ -20,7 +20,7 @@ import { Logger } from './logger';
  */
 export class Init {
     public static readonly GET_PACKAGE_WITH_VERSION_CMD = 'yarn --json --non-interactive --no-progress list --pattern=';
-    public static readonly MONACO_CORE_PKG = '@typefox/monaco-editor-core';
+    public static readonly MONACO_CORE_PKG = '@theia/monaco-editor-core';
     public static readonly MONACO_HTML_CONTRIB_PKG = 'monaco-html';
     public static readonly MONACO_CSS_CONTRIB_PKG = 'monaco-css';
 
@@ -32,7 +32,7 @@ export class Init {
         return (await readPkg(path.join(this.rootFolder, 'packages/core/package.json'))).version;
     }
 
-    async getPackageWithVersion(name: string): Promise<String> {
+    async getPackageWithVersion(name: string): Promise<string> {
         const pkg = JSON.parse(await new Command(path.resolve(this.rootFolder)).exec(Init.GET_PACKAGE_WITH_VERSION_CMD + name)).data.trees[0];
         return pkg ? pkg.name : '';
     }
@@ -41,12 +41,14 @@ export class Init {
         const srcDir = path.resolve(__dirname, '../src');
         const distDir = path.resolve(__dirname, '../dist');
         const templateDir = path.join(srcDir, 'templates');
+        const compileTsConfig = path.join(templateDir, 'assembly-compile.tsconfig.json');
         const packageJsonContent = await fs.readFile(path.join(templateDir, 'assembly-package.mst'));
 
         // generate assembly if does not exists
         const rendered = await this.generateAssemblyPackage(packageJsonContent.toString());
         await fs.ensureDir(this.examplesAssemblyFolder);
         await fs.writeFile(path.join(this.examplesAssemblyFolder, 'package.json'), rendered);
+        await fs.copy(compileTsConfig, path.join(this.examplesAssemblyFolder, 'compile.tsconfig.json'));
         await fs.copy(path.join(templateDir, 'cdn'), path.join(this.examplesAssemblyFolder, 'cdn'));
         Logger.info(distDir);
         await fs.copy(path.join(distDir, 'cdn'), path.join(this.examplesAssemblyFolder, 'cdn'));
@@ -68,6 +70,37 @@ export class Init {
             monacocsscontribpkg: await this.getPackageWithVersion(Init.MONACO_CSS_CONTRIB_PKG)
         };
         return mustache.render(template, tags).replace(/&#x2F;/g, '/');
+    }
+
+    async updadeBuildConfiguration(): Promise<void> {
+        const theiaPackagePath = path.join(this.rootFolder, 'package.json');
+        const theiaPackage = await readPkg(theiaPackagePath);
+        const scriptsConfiguration = theiaPackage.scripts;
+
+        if (scriptsConfiguration && scriptsConfiguration['prepare:build']) {
+            scriptsConfiguration['prepare:build'] = 'yarn build && run lint && lerna run build';
+        }
+
+        const json = JSON.stringify(theiaPackage, undefined, 2);
+        await fs.writeFile(theiaPackagePath, json);
+    }
+
+    async updatePluginsConfigurtion(): Promise<void> {
+        const theiaPackagePath = path.join(this.rootFolder, 'package.json');
+        const theiaPackage = await readPkg(theiaPackagePath);
+
+        theiaPackage['theiaPlugins'] = await this.getPluginsList();
+
+        const json = JSON.stringify(theiaPackage, undefined, 2);
+        await fs.writeFile(theiaPackagePath, json);
+    }
+
+    private async getPluginsList(): Promise<any> {
+        const srcDir = path.resolve(__dirname, '../src');
+        const templateDir = path.join(srcDir, 'templates');
+        const pluginsJsonContent = await fs.readFile(path.join(templateDir, 'theiaPlugins.json'));
+
+        return JSON.parse(pluginsJsonContent.toString());
     }
 
 }

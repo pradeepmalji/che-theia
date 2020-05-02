@@ -39,6 +39,8 @@ const commandArgs = yargs
                 const init = new Init(process.cwd(), assemblyFolder, cheFolder, pluginsFolder);
                 const version = await init.getCurrentVersion();
                 await init.generate();
+                await init.updadeBuildConfiguration();
+                await init.updatePluginsConfigurtion();
                 const extensions = new InitSources(process.cwd(), packagesFolder, pluginsFolder, cheFolder, assemblyFolder, version);
                 await extensions.initSourceLocationAliases(args.alias);
                 await extensions.readConfigurationAndGenerate(args.config, args.dev);

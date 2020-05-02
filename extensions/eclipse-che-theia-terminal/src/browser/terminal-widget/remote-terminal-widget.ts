@@ -11,7 +11,7 @@
 import { injectable, inject, postConstruct } from 'inversify';
 import { TerminalWidgetImpl } from '@theia/terminal/lib/browser/terminal-widget-impl';
 import { IBaseTerminalServer } from '@theia/terminal/lib/common/base-terminal-protocol';
-import { TerminalProxyCreator, TerminalProxyCreatorProvider } from '../server-definition/terminal-proxy-creator';
+import { TerminalProxyCreatorProvider } from '../server-definition/terminal-proxy-creator';
 import { ATTACH_TERMINAL_SEGMENT, RemoteTerminalServerProxy, RemoteTerminalWatcher } from '../server-definition/remote-terminal-protocol';
 import { RemoteWebSocketConnectionProvider } from '../server-definition/remote-connection';
 import { Deferred } from '@theia/core/lib/common/promise-util';
@@ -21,6 +21,7 @@ import { MessageService } from '@theia/core/lib/common';
 import { OutputChannelManager, OutputChannel } from '@theia/output/lib/common/output-channel';
 import URI from '@theia/core/lib/common/uri';
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import { IDisposable } from 'xterm';
 export const REMOTE_TERMINAL_TARGET_SCOPE = 'remote-terminal';
 export const REMOTE_TERMINAL_WIDGET_FACTORY_ID = 'remote-terminal';
 export const RemoteTerminalWidgetOptions = Symbol('RemoteTerminalWidgetOptions');
@@ -60,7 +61,6 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
     @inject(OutputChannelManager)
     protected readonly outputChannelManager: OutputChannelManager;
 
-    protected terminalId: number = -1;
     private isOpen: boolean = false;
     protected channel: OutputChannel;
 
@@ -76,6 +76,12 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
                 }
                 this.onTermDidClose.fire(this);
                 this.onTermDidClose.dispose();
+            }
+        }));
+
+        this.toDispose.push(this.term.onTitleChange((title: string) => {
+            if (this.options.useServerTitle) {
+                this.title.label = this.options.machineName + ': ' + title;
             }
         }));
 
@@ -107,7 +113,7 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
     async start(id?: number): Promise<number> {
         try {
             if (!this.termServer) {
-                const termProxyCreator = <TerminalProxyCreator>await this.termProxyCreatorProvider();
+                const termProxyCreator = await this.termProxyCreatorProvider();
                 this.termServer = termProxyCreator.create();
 
                 this.toDispose.push(this.termServer.onDidCloseConnection(() => {
@@ -124,10 +130,10 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
         }
 
         try {
-            this.terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id);
+            this._terminalId = typeof id !== 'number' ? await this.createTerminal() : await this.attachTerminal(id);
         } catch (error) {
             if (IBaseTerminalServer.validateId(id)) {
-                this.terminalId = id!;
+                this._terminalId = id!;
                 this.onDidOpenEmitter.fire(undefined);
                 return this.terminalId;
             }
@@ -136,10 +142,10 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
 
         this.connectTerminalProcess();
 
-        await this.waitForRemoteConnection;
+        await this.waitForRemoteConnection!.promise;
         // Some delay need to attach exec. If we send resize earlier this size will be skipped.
         setTimeout(async () => {
-            await this.resizeTerminalProcess();
+            this.resizeTerminalProcess();
         }, 100);
 
         if (IBaseTerminalServer.validateId(this.terminalId)) {
@@ -183,17 +189,18 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
 
         const sendListener = (data: string) => socket.send(data);
 
+        let onDataDisposeHandler: IDisposable;
         socket.onopen = () => {
             this.term.reset();
             if (this.waitForRemoteConnection) {
                 this.waitForRemoteConnection.resolve(socket);
             }
 
-            this.term.on('data', sendListener);
+            onDataDisposeHandler = this.term.onData(sendListener);
             socket.onmessage = ev => this.write(ev.data);
 
             this.toDispose.push(Disposable.create(() => {
-                this.term.off('data', sendListener);
+                onDataDisposeHandler.dispose();
                 socket.close();
             }));
 
@@ -202,12 +209,16 @@ export class RemoteTerminalWidget extends TerminalWidgetImpl {
         };
 
         socket.onerror = err => {
-            this.term.off('data', sendListener);
+            if (onDataDisposeHandler) {
+                onDataDisposeHandler.dispose();
+            }
             return Promise.resolve();
         };
 
         socket.onclose = code => {
-            this.term.off('data', sendListener);
+            if (onDataDisposeHandler) {
+                onDataDisposeHandler.dispose();
+            }
             return Promise.resolve();
         };
     }

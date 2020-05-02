@@ -22,17 +22,10 @@ tar rf ${DIR}/asset-che-theia.tar .git-che-theia-sha1
 gzip -f ${DIR}/asset-che-theia.tar
 
 # Download plugins
-THEIA_YEOMAN_PLUGIN="${DIR}/asset-untagged-c11870b25a17d20bb7a7-theia_yeoman_plugin.theia"
+THEIA_YEOMAN_PLUGIN="${DIR}/asset-untagged-theia_yeoman_plugin.theia"
 if [ ! -f "${THEIA_YEOMAN_PLUGIN}" ]; then
-    curl -L -o ${THEIA_YEOMAN_PLUGIN} https://github.com/eclipse/theia-yeoman-plugin/releases/download/untagged-c11870b25a17d20bb7a7/theia_yeoman_plugin.theia
+    curl -L -o ${THEIA_YEOMAN_PLUGIN} https://github.com/eclipse/theia-yeoman-plugin/releases/download/untagged-8a7963262e021dab8ae0/theia_yeoman_plugin.theia
 fi
-
-# VS Code git plug-in
-VSCODE_GIT_PLUGIN="${DIR}/asset-vscode-git-1.3.0.1.vsix"
-if [ ! -f "${VSCODE_GIT_PLUGIN}" ]; then
-    curl -L -o ${VSCODE_GIT_PLUGIN} https://github.com/che-incubator/vscode-git/releases/download/1.30.1/vscode-git-1.3.0.1.vsix
-fi
-
 
 init --name:theia "$@"
 
@@ -56,9 +49,11 @@ if [[ -z "$DOCKER_BUILD_TARGET" ]]; then
   "${base_dir}"/extract-for-cdn.sh "$IMAGE_NAME" "${base_dir}/theia_artifacts"
   LABEL_CONTENT=$(cat "${base_dir}"/theia_artifacts/cdn.json || true 2>/dev/null)
   if [ -n "${LABEL_CONTENT}" ]; then
-    BUILD_ARGS+="--label che-plugin.cdn.artifacts=$(echo ${LABEL_CONTENT} | sed 's/ //g') "
-    echo "Rebuilding with CDN label..."
-    build
+    echo "Adding the CDN label..."
+    docker build --label che-plugin.cdn.artifacts="$(echo ${LABEL_CONTENT} | sed 's/ //g')" -t "${IMAGE_NAME}-with-label" -<<EOF
+FROM ${IMAGE_NAME}
+EOF
+    docker tag "${IMAGE_NAME}-with-label" "${IMAGE_NAME}"
     "${base_dir}"/push-cdn-files-to-akamai.sh
   fi
 fi

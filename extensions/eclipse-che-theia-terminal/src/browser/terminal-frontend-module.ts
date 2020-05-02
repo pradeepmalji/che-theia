@@ -14,9 +14,6 @@ import { TerminalQuickOpenService } from './contribution/terminal-quick-open';
 import { RemoteTerminalWidgetOptions, REMOTE_TERMINAL_WIDGET_FACTORY_ID, REMOTE_TERMINAL_TARGET_SCOPE } from './terminal-widget/remote-terminal-widget';
 import { RemoteWebSocketConnectionProvider } from './server-definition/remote-connection';
 import { TerminalProxyCreator, TerminalProxyCreatorProvider, TerminalApiEndPointProvider } from './server-definition/terminal-proxy-creator';
-
-import '../../src/browser/terminal-widget/terminal.css';
-import 'xterm/lib/xterm.css';
 import { cheWorkspaceServicePath, CHEWorkspaceService } from '../common/workspace-service';
 import { ExecTerminalFrontendContribution, NewTerminalInSpecificContainer } from './contribution/exec-terminal-contribution';
 import { TerminalFrontendContribution } from '@theia/terminal/lib/browser/terminal-frontend-contribution';
@@ -26,8 +23,10 @@ import { RemoteTerminalWidget } from './terminal-widget/remote-terminal-widget';
 import { RemoteTerminaActiveKeybingContext } from './contribution/keybinding-context';
 import { RemoteTerminalServerProxy, RemoteTerminalServer, RemoteTerminalWatcher } from './server-definition/remote-terminal-protocol';
 import URI from '@theia/core/lib/common/uri';
+import { createTerminalSearchFactory } from '@theia/terminal/lib/browser/search/terminal-search-container';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { TerminalWidgetImpl } from '@theia/terminal/lib/browser/terminal-widget-impl';
+import { TerminalSearchWidgetFactory } from '@theia/terminal/lib/browser/search/terminal-search-widget';
 
 export default new ContainerModule((bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind) => {
     // bind this contstant to prevent circle dependency
@@ -69,6 +68,8 @@ export default new ContainerModule((bind: interfaces.Bind, unbind: interfaces.Un
             child.bind(TerminalWidgetOptions).toConstantValue(widgetOptions);
             child.bind(RemoteTerminalWidgetOptions).toConstantValue(widgetOptions);
             child.bind('terminal-dom-id').toConstantValue(domId);
+
+            child.bind(TerminalSearchWidgetFactory).toDynamicValue(context => createTerminalSearchFactory(context.container));
 
             return child.getNamed(TerminalWidget, REMOTE_TERMINAL_TARGET_SCOPE);
         }

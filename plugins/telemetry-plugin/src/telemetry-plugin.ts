@@ -11,9 +11,17 @@
 import * as theia from '@theia/plugin';
 import * as che from '@eclipse-che/plugin';
 
-export function start(context: theia.PluginContext) {
+export function start(context: theia.PluginContext): void {
     che.telemetry.event('WORKSPACE_OPENED', context.extensionPath, [
     ]);
+
+    che.telemetry.addCommandListener('git.commit', () => {
+        che.telemetry.event('COMMIT_LOCALLY', context.extensionPath, []);
+    });
+
+    che.telemetry.addCommandListener('git.push', () => {
+        che.telemetry.event('PUSH_TO_REMOTE', context.extensionPath, []);
+    });
 
     theia.workspace.onDidChangeTextDocument((e: theia.TextDocumentChangeEvent) => {
         che.telemetry.event('EDITOR_USED', context.extensionPath,
@@ -23,6 +31,6 @@ export function start(context: theia.PluginContext) {
     });
 }
 
-export function stop() {
+export function stop(): void {
 
 }

@@ -13,6 +13,7 @@
   ],
   "dependencies": {
     "@theia/core": "next",
+    "@theia/workspace": "next",
     "nsfw": "^1.2.2",
     "@theia/preferences": "next",
     "@eclipse-che/theia-plugin-ext": "^0.0.1"
@@ -24,7 +25,7 @@
     "prepare": "yarn run clean && yarn run build",
     "clean": "rimraf lib",
     "format": "tsfmt -r --useTsfmt ../../configs/tsfmt.json",
-    "lint": "tslint -c ../../configs/tslint.json --project tsconfig.json",
+    "lint": "eslint --cache=true --no-error-on-unmatched-pattern=true \"{src,test}/**/*.{ts,tsx}\"",
     "compile": "tsc",
     "build": "concurrently -n \"format,lint,compile\" -c \"red,green,blue\" \"yarn format\" \"yarn lint\" \"yarn compile\"",
     "watch": "tsc -w"

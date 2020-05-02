@@ -25,6 +25,9 @@ import { CheTelemetryImpl } from './che-telemetry';
 import { CheUserImpl } from './che-user';
 import { CheVariablesImpl } from './che-variables';
 import { CheWorkspaceImpl } from './che-workspace';
+import { CheOpenshiftImpl } from './che-openshift';
+import { CheOauthImpl } from './che-oauth';
+import { Disposable } from '@theia/core';
 
 export interface CheApiFactory {
     (plugin: Plugin): typeof che;
@@ -38,6 +41,8 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
     const cheTaskImpl = rpc.set(PLUGIN_RPC_CONTEXT.CHE_TASK, new CheTaskImpl(rpc));
     const cheSshImpl = rpc.set(PLUGIN_RPC_CONTEXT.CHE_SSH, new CheSshImpl(rpc));
     const cheGithubImpl = rpc.set(PLUGIN_RPC_CONTEXT.CHE_GITHUB, new CheGithubImpl(rpc));
+    const cheOpenshiftImpl = rpc.set(PLUGIN_RPC_CONTEXT.CHE_OPENSHIFT, new CheOpenshiftImpl(rpc));
+    const cheOauthImpl = rpc.set(PLUGIN_RPC_CONTEXT.CHE_OAUTH, new CheOauthImpl(rpc));
     const cheUserImpl = rpc.set(PLUGIN_RPC_CONTEXT.CHE_USER, new CheUserImpl(rpc));
     rpc.set(PLUGIN_RPC_CONTEXT.CHE_SIDERCAR_CONTENT_READER, new CheSideCarContentReaderImpl(rpc));
 
@@ -58,27 +63,27 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
             getById(workspaceKey: string): Promise<cheApi.workspace.Workspace> {
                 return cheWorkspaceImpl.getById(workspaceKey);
             },
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             create(config: cheApi.workspace.WorkspaceConfig, params: che.KeyValue): Promise<any> {
                 return cheWorkspaceImpl.create(config, params);
             },
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             update(workspaceId: string, workspaceObj: cheApi.workspace.Workspace): Promise<any> {
                 return cheWorkspaceImpl.update(workspaceId, workspaceObj);
             },
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             deleteWorkspace(workspaceId: string): Promise<any> {
                 return cheWorkspaceImpl.deleteWorkspace(workspaceId);
             },
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             start(workspaceId: string, environmentName: string): Promise<any> {
                 return cheWorkspaceImpl.start(workspaceId, environmentName);
             },
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             startTemporary(config: cheApi.workspace.WorkspaceConfig): Promise<any> {
                 return cheWorkspaceImpl.startTemporary(config);
             },
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             stop(workspaceId: string): Promise<any> {
                 return cheWorkspaceImpl.stop(workspaceId);
             },
@@ -102,6 +107,12 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
         const telemetry: typeof che.telemetry = {
             event(id: string, ownerId: string, properties: [string, string][]): Promise<void> {
                 return cheTelemetryImpl.event(id, ownerId, properties);
+            },
+            addCommandListener(commandId: string, listener: che.TelemetryListener): Promise<void> {
+                return cheTelemetryImpl.addCommandListener(commandId, listener);
+            },
+            getClienAddressInfo(): Promise<che.ClientAddressInfo> {
+                return cheTelemetryImpl.getClientAddressInfo();
             }
         };
 
@@ -117,6 +128,27 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
         const github: typeof che.github = {
             uploadPublicSshKey(publicKey: string): Promise<void> {
                 return cheGithubImpl.uploadPublicSshKey(publicKey);
+            },
+            getToken(): Promise<string> {
+                return cheGithubImpl.getToken();
+            }
+        };
+
+        const openshift: typeof che.openshift = {
+            getToken(): Promise<string> {
+                return cheOpenshiftImpl.getToken();
+            }
+        };
+
+        const oAuth: typeof che.oAuth = {
+            getProviders(): Promise<string[]> {
+                return cheOauthImpl.getProviders();
+            },
+            isAuthenticated(provider: string): Promise<boolean> {
+                return cheOauthImpl.isAuthenticated(provider);
+            },
+            isRegistered(provider: string): Promise<boolean> {
+                return cheOauthImpl.isRegistered(provider);
             }
         };
 
@@ -152,10 +184,10 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
             setTaskStatus(options: TaskStatusOptions): Promise<void> {
                 return cheTaskImpl.setTaskStatus(options);
             },
-            onDidStartTask(listener: (event: che.TaskInfo) => void, disposables?: che.Disposable[]) {
+            onDidStartTask(listener: (event: che.TaskInfo) => void, disposables?: che.Disposable[]): Disposable {
                 return cheTaskImpl.onDidStartTask(listener, undefined, disposables);
             },
-            onDidEndTask(listener: (event: che.TaskExitedEvent) => void, disposables?: che.Disposable[]) {
+            onDidEndTask(listener: (event: che.TaskExitedEvent) => void, disposables?: che.Disposable[]): Disposable {
                 return cheTaskImpl.onDidEndTask(listener, undefined, disposables);
             }
         };
@@ -203,6 +235,8 @@ export function createAPIFactory(rpc: RPCProtocol): CheApiFactory {
             user,
             product,
             github,
+            openshift,
+            oAuth,
             telemetry,
             TaskStatus
         };
