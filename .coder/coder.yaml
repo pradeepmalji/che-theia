@@ -2,7 +2,7 @@ version: 0.2
 workspace:
   type: kubernetes
   spec:
-    image: codercom/enterprise-node
+    image: codercom/enterprise-node:ubuntu
     container-based-vm: false
     cpu: 4
     memory: 16
