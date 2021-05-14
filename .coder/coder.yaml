@@ -2,7 +2,7 @@ version: 0.2
 workspace:
   type: kubernetes
   spec:
-    image: ubuntu
+    image: timbru31/node-alpine-git
     container-based-vm: false
     cpu: 4
     memory: 16
@@ -11,11 +11,6 @@ workspace:
     labels:
       com.coder.custom.hello: "hello"
       com.coder.custom.world: "world"
-  configure:
-    start:
-      - name: "install curl"
-        command: |
-          apt update && apt install -y git ssh
   devURLs:
     - name: MyWebsite
       port: 3000
