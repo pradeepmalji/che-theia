@@ -11,6 +11,11 @@ workspace:
     labels:
       com.coder.custom.hello: "hello"
       com.coder.custom.world: "world"
+  configure:
+    start:
+      - name: "code checkout"
+        command: |
+          git clone https://github.com/pradeepmalji/che-theia.git
   devURLs:
     - name: MyWebsite
       port: 3000
