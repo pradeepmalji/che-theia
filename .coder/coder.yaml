@@ -2,7 +2,7 @@ version: 0.2
 workspace:
   type: kubernetes
   spec:
-    image: timbru31/node-alpine-git
+    image: codercom/enterprise-node
     container-based-vm: false
     cpu: 4
     memory: 16
