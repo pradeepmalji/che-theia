@@ -1,0 +1,29 @@
+version: 0.2
+workspace:
+  type: kubernetes
+  spec:
+    image: index.docker.io/ubuntu:18.04
+    container-based-vm: false
+    cpu: 4
+    memory: 16
+    disk: 128
+    gpu-count: 1
+    labels:
+      com.coder.custom.hello: "hello"
+      com.coder.custom.world: "world"
+  configure:
+    start:
+      - name: "install curl"
+        command: |
+          apt update
+          apt install -y node curl
+     
+  devURLs:
+    - name: MyWebsite
+      port: 3000
+      scheme: http
+      access: private
+    - name: PublicPort
+      port: 8080
+      scheme: https
+      access: public
