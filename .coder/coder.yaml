@@ -2,7 +2,7 @@ version: 0.2
 workspace:
   type: kubernetes
   spec:
-    image: ubuntu:18.04
+    image: ubuntu
     container-based-vm: false
     cpu: 4
     memory: 16
